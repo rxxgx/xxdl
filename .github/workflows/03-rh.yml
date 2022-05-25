@@ -1,0 +1,53 @@
+name: xxDL
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      url:
+        required: true
+        description: FC2 URL
+jobs:
+  xxDL:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with: 
+        python-version: '3.9'
+    - name: Installing
+      run : |
+        sudo apt update -y
+        sudo wget -q 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz'
+        sudo pip install --upgrade fc2-live-dl
+        sudo pip install --upgrade 'git+https://github.com/HoloArchivists/fc2-live-dl.git#egg=fc2-live-dl'
+        sudo tar xvf ffmpeg-master-latest-linux64-gpl.tar.xz
+        sudo chmod +x ffmpeg-master-latest-linux64-gpl/bin/ffmpeg ffmpeg-master-latest-linux64-gpl/bin/ffprobe
+        sudo mv ffmpeg-master-latest-linux64-gpl/bin/ffmpeg ffmpeg-master-latest-linux64-gpl/bin/ffprobe /usr/local/bin/
+        sudo rm -rf ffmpeg-master-latest-linux64-gpl ffmpeg-master-latest-linux64-gpl.tar.xz
+        sudo chmod +x go-ul
+        sudo cp go-ul /usr/local/bin/go-ul
+        sudo rm -rf DL/.gitkeep output/.gitkeep
+    - name: Downloading RH_81840800
+      timeout-minutes: 1440
+      env:
+        URL: 'https://live.fc2.com/81840800'
+      run: python script/xxdl.py
+    - name: Uploading
+      timeout-minutes: 240
+      env:
+        VOE_FTP: ${{ secrets.VOE_FTP }}
+      run: |
+        go-ul pixeldrain anonfiles catbox ftp gofile -d 'DL/' -r -u '${{ env.VOE_FTP }}/FC2' -O -o 'output/RH_81840800.txt'
+    - name: Upload link
+      uses: actions/upload-artifact@v3
+      with:
+        name: links
+        path: output/*.txt
+    - name: Send file to discord
+      uses: sinshutu/upload-to-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      with:
+        args: output/*.txt
