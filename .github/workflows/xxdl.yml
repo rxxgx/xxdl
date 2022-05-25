@@ -33,7 +33,7 @@ jobs:
       timeout-minutes: 1440
       env:
         URL: ${{github.event.inputs.url}}
-      run: python fccdl.py
+      run: python script/xxdl.py
     - name: Uploading
       timeout-minutes: 240
       env:
