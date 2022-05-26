@@ -1,4 +1,4 @@
-name: xxDL
+name: test
 on:
   workflow_dispatch:
     inputs:
@@ -6,7 +6,7 @@ on:
         required: true
         description: FC2 URL
 jobs:
-  xxDL:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
